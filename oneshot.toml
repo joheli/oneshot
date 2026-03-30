@@ -1,0 +1,28 @@
+[vendor]
+# options
+[vendor.ollama]
+host = "http://localhost:11434"
+
+[vendor.openai]
+api_key = "sk-proj-XXX"
+
+[query]
+type = "singleton-image" # "singleton-text", "singleton-image", "batch-text", "batch-image"
+target = "ollama"
+model_name = "gemma3:4b"
+temperature = 0.2
+#target = "openai"
+#model_name = "gpt-5.4-nano"
+
+[query.details]
+#instructions = "You are a helpful assistant. Please answer the question using the context below."
+#context = "Dragan Ismailovic and Yasmina Kovzova are married. Their children are called Sohar (girl) and Boban (boy)"
+#question = "What is the name of Dragan Ismailovic' and Yasmina Kovzova's daughter?"
+instructions = "You are a visual assistant. Please answer specifically and as briefly as possible to the question."
+question = "Do you see raspberries? Please only answer 'yes', 'no', or 'uncertain'."
+image = "demo/berries.png"
+#img_dir = "demo"
+#csv_file = "temp/queries.csv"
+#colname_instructions = "instructions"
+#colname_questions = "questions"
+#colname_contexts = "contexts"

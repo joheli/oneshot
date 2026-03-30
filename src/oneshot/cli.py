@@ -1,8 +1,12 @@
 from rich import print
-from oneshot.interface import process_config
+from oneshot.llm_request import process_config
+from oneshot.llm_response import RESPONSEFUN, LLMResponse
 from oneshot.config import Config
 from oneshot.utils import b64enc
 import requests
+from pathlib import Path
+import tomllib
+from oneshot.time import measure_time
 
 def cli():
     # cfg_path = Path("oneshot_prv.toml")
@@ -13,14 +17,19 @@ def cli():
     
     cfg = Config.from_toml("oneshot_prv.toml")
     
-    print(cfg)
+    #print(cfg)
     
-    pc = process_config(cfg)
-    
-    for rq in pc:
-        resp = requests.post(url = rq.url, headers = rq.headers, 
-                             json = rq.json)
-        print(resp.json())
+    for rq in process_config(cfg):
+        raw_response, elapsed = measure_time(requests.post,
+                                     url = rq.url, headers = rq.headers, 
+                                     json = rq.json)
+        #print(resp.json())
+        responsefun = RESPONSEFUN[cfg.query.target]
+        response = responsefun(raw_response.json())
+        print(f"From {response.model_name} on {response.provider} with love:")
+        print(f"Response: {response.response_text}")
+        print(f"timepoint: {response.timepoint}")
+        print(f"elapsed: {elapsed}")
     
 if __name__ == "__main__":
     cli()

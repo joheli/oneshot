@@ -3,6 +3,7 @@ from typing_extensions import Self
 from typing import Literal, Annotated, Any
 from pathlib import Path
 import tomllib
+from oneshot.tables import csv_has_columns
 
 class Ollama(pd.BaseModel):
     host: pd.AnyHttpUrl | None = None
@@ -48,10 +49,22 @@ class SingletonImage(Singleton):
     image: pd.FilePath
     
 class BatchText(pd.BaseModel):
-    table_file: pd.FilePath
+    csv_file: pd.FilePath
     colname_instructions: str = "instructions"
     colname_questions: str = "questions"
-    colname_context: str| None = None
+    colname_contexts: str| None = None
+    
+    @pd.model_validator(mode="after")
+    def check_csv_file(self) -> Self:
+        # check if table file has suffix .csv
+        if not self.csv_file.suffix.lower() == ".csv":
+            raise ValueError(f"{self.csv_file.name} has to be a csv file!")
+        # check if csv file has the required column names
+        column_names = [self.colname_instructions, self.colname_contexts, self.colname_questions]
+        required_columns = [c for c in column_names if c is not None]
+        if not csv_has_columns(self.csv_file, required_columns):
+            raise ValueError(f"{self.csv_file.name} does not have required column names {required_columns}.")
+        return self
     
 class BatchImage(Singleton):
     img_dir: pd.DirectoryPath
@@ -60,6 +73,7 @@ class Query(pd.BaseModel):
     type: Literal["singleton-text", "singleton-image", "batch-text", "batch-image"]
     target: Literal["ollama", "openai"]
     model_name: Annotated[str, pd.Field(max_length = 40)]
+    temperature: Annotated[float, pd.Field(ge = 0.0, le = 1.0)]
     details: SingletonText | SingletonImage | BatchText | BatchImage
     
     # check the data passed in "details"
