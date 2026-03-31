@@ -2,6 +2,8 @@ import base64
 from pathlib import Path
 import cv2
 import mimetypes
+from time import perf_counter
+from typing import Callable, TypeVar, Tuple
 
 def b64enc(fl: Path) -> str:
     try:
@@ -37,7 +39,15 @@ def cv2_to_base64(img_bgr) -> str:
     # buf is a 1D uint8 array → bytes → base64 string
     img_bytes = buf.tobytes()
     return base64.b64encode(img_bytes).decode('utf-8')  # UTF‑8 string for JSON
-        
+
+T = TypeVar("T")
+
+def measure_time(func: Callable[..., T], *args, **kwargs) -> Tuple[T, float]:
+    start = perf_counter()
+    result = func(*args, **kwargs)
+    end = perf_counter()
+    return result, end - start
+    
 if __name__ == "__main__":
     #b = b64enc(Path("demo/resized.jpg"))
     b = guess_image_mime(Path("README.md"))

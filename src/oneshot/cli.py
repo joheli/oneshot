@@ -2,11 +2,10 @@ from rich import print
 from oneshot.llm_request import process_config
 from oneshot.llm_response import RESPONSEFUN, LLMResponse
 from oneshot.config import Config
-from oneshot.utils import b64enc
+from oneshot.utils import b64enc, measure_time
 import requests
 from pathlib import Path
 import tomllib
-from oneshot.time import measure_time
 
 def cli():
     # cfg_path = Path("oneshot_prv.toml")
