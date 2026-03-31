@@ -50,6 +50,7 @@ class SingletonImage(Singleton):
     
 class BatchText(pd.BaseModel):
     csv_file: pd.FilePath
+    colname_query_id: str = "qid"
     colname_instructions: str = "instructions"
     colname_questions: str = "questions"
     colname_contexts: str| None = None
@@ -60,7 +61,7 @@ class BatchText(pd.BaseModel):
         if not self.csv_file.suffix.lower() == ".csv":
             raise ValueError(f"{self.csv_file.name} has to be a csv file!")
         # check if csv file has the required column names
-        column_names = [self.colname_instructions, self.colname_contexts, self.colname_questions]
+        column_names = [self.colname_query_id, self.colname_instructions, self.colname_contexts, self.colname_questions]
         required_columns = [c for c in column_names if c is not None]
         if not csv_has_columns(self.csv_file, required_columns):
             raise ValueError(f"{self.csv_file.name} does not have required column names {required_columns}.")

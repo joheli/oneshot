@@ -8,6 +8,7 @@ from pathlib import Path
 import tomllib
 
 def cli():
+    
     # cfg_path = Path("oneshot_prv.toml")
     # with cfg_path.open("rb") as cfg:
     #     config = tomllib.load(cfg)
@@ -18,17 +19,18 @@ def cli():
     
     #print(cfg)
     
-    for rq in process_config(cfg):
+    for qid, rq in process_config(cfg):
         raw_response, elapsed = measure_time(requests.post,
                                      url = rq.url, headers = rq.headers, 
                                      json = rq.json)
         #print(resp.json())
         responsefun = RESPONSEFUN[cfg.query.target]
         response = responsefun(raw_response.json())
-        print(f"From {response.model_name} on {response.provider} with love:")
+        print(f"Model {response.model_name} on {response.provider}:")
+        print(f"Query id: {qid}")
         print(f"Response: {response.response_text}")
-        print(f"timepoint: {response.timepoint}")
-        print(f"elapsed: {elapsed}")
+        print(f"Timepoint (UTC): {response.timepoint}")
+        print(f"Elapsed: {elapsed:.3f} seconds\n")
     
 if __name__ == "__main__":
     cli()

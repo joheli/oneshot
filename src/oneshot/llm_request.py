@@ -73,7 +73,7 @@ def request_ollama(model_name: str,
 REQUESTFUN = {"openai": request_openai, "ollama": request_ollama}
 
 # `process_config` is a function that takes a config object and returns an iterator yielding LLMRequest objects
-def process_config(cfg: Config) -> Iterator[LLMRequest]:
+def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
     # function for generating LLMRequest objects
     reqfun = REQUESTFUN[cfg.query.target]
     
@@ -100,7 +100,7 @@ def process_config(cfg: Config) -> Iterator[LLMRequest]:
             # this should never happen, but let's be safe:
             return ValueError(f"Target {cfg.query.target} is currently not implemented.")
         # pass the arguments to reqfun
-        yield reqfun(**args)
+        yield "singleton", reqfun(**args)
     
     # singleton-text
     elif (cfg.query.type == "singleton-text"):
@@ -124,11 +124,14 @@ def process_config(cfg: Config) -> Iterator[LLMRequest]:
             # this should never happen, but let's be safe:
             return ValueError(f"Target {cfg.query.target} is currently not implemented.")
         # pass the arguments to reqfun
-        yield reqfun(**args)
+        yield "singleton", reqfun(**args)
         
     # batch-image
     elif (cfg.query.type == "batch-image"):
         # here images are taken from a directory and looped over
+        # TODO:
+        # iterdir has to be replaced by glob.glob to filter only
+        # images!
         for img_file in cfg.query.details.img_dir.iterdir():
             # loop over images
             if (cfg.query.target == "ollama"):
@@ -152,7 +155,7 @@ def process_config(cfg: Config) -> Iterator[LLMRequest]:
                 # this should never happen, but let's be safe:
                 return ValueError(f"Target {cfg.query.target} is currently not implemented.")
             # pass the arguments to reqfun
-            yield reqfun(**args)
+            yield img_file.name, reqfun(**args)
             
     # batch-text
     elif (cfg.query.type == "batch-text"):
@@ -177,7 +180,8 @@ def process_config(cfg: Config) -> Iterator[LLMRequest]:
                 # this should never happen, but let's be safe:
                 return ValueError(f"Target {cfg.query.target} is currently not implemented.")
             # pass the arguments to reqfun
-            yield reqfun(**args)
+            # TODO: introduce row no. here
+            yield row.get(cfg.query.details.colname_query_id, 'no query id'), reqfun(**args)
             
     else:
         # this should never happen, but let's be safe:
