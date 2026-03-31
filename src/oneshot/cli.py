@@ -5,9 +5,19 @@ from oneshot.config import Config
 from oneshot.utils import measure_time
 import requests
 import polars as pl
+from pathlib import Path
+from typing import Annotated
+import typer
+from oneshot import __version__
 
-def cli():
-    cfg = Config.from_toml("oneshot_prv.toml")
+"""
+FUT
+"""
+def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True, readable=True, dir_okay=False)] = Path("oneshot.toml")):
+    f"""
+    oneshot version {__version__}
+    """
+    cfg = Config.from_toml(config_file)
     
     records = []
     
@@ -37,5 +47,5 @@ def cli():
         df.write_csv(cfg.out.csv_file, separator = cfg.out.csv_file_separator)
         
     
-if __name__ == "__main__":
-    cli()
+def cli():
+    typer.run(main)
