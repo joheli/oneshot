@@ -3,7 +3,7 @@ from pathlib import Path
 import cv2
 import mimetypes
 from time import perf_counter
-from typing import Callable, TypeVar, Tuple
+from typing import Callable, TypeVar
 
 def b64enc(fl: Path) -> str:
     try:
@@ -42,11 +42,21 @@ def cv2_to_base64(img_bgr) -> str:
 
 T = TypeVar("T")
 
-def measure_time(func: Callable[..., T], *args, **kwargs) -> Tuple[T, float]:
+def measure_time(func: Callable[..., T], *args, **kwargs) -> tuple[T, float]:
     start = perf_counter()
     result = func(*args, **kwargs)
     end = perf_counter()
     return result, end - start
+
+def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
+    items: dict[str, object] = {}
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.update(flatten_dict(v, new_key, sep=sep))
+        else:
+            items[new_key] = v
+    return items
     
 if __name__ == "__main__":
     #b = b64enc(Path("demo/resized.jpg"))

@@ -50,6 +50,7 @@ class SingletonImage(Singleton):
     
 class BatchText(pd.BaseModel):
     csv_file: pd.FilePath
+    csv_file_separator: Literal[",", ";", "\t"] = ","
     colname_query_id: str = "qid"
     colname_instructions: str = "instructions"
     colname_questions: str = "questions"
@@ -63,7 +64,7 @@ class BatchText(pd.BaseModel):
         # check if csv file has the required column names
         column_names = [self.colname_query_id, self.colname_instructions, self.colname_contexts, self.colname_questions]
         required_columns = [c for c in column_names if c is not None]
-        if not csv_has_columns(self.csv_file, required_columns):
+        if not csv_has_columns(self.csv_file, required_columns, separator = self.csv_file_separator):
             raise ValueError(f"{self.csv_file.name} does not have required column names {required_columns}.")
         return self
     
@@ -115,9 +116,25 @@ class Query(pd.BaseModel):
         data["details"] = model.model_validate(raw_details)
         return data
     
+class Out(pd.BaseModel):
+    mode: Literal["standard", "file"] = "standard"
+    csv_file: Path
+    csv_file_separator: Literal[",", ";", "\t"] = ","
+    
+    @pd.field_validator("csv_file")
+    @classmethod
+    def validate_out_file(cls, v: Path) -> Path:
+        # Example: require that parent directory exists, but file itself must NOT exist
+        if v.exists():
+            raise ValueError(f"File already exists: {v}")
+        if not v.parent.exists():
+            raise ValueError(f"Parent directory does not exist: {v.parent}")
+        return v
+    
 class Config(pd.BaseModel):
     vendor: Vendor
     query: Query
+    out: Out
     
     @pd.model_validator(mode = "after")
     def target_defined(self) -> Self:

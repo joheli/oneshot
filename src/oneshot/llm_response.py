@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 from datetime import datetime, timezone
-
+from oneshot.utils import flatten_dict
 
 @dataclass
 class LLMResponse:
@@ -10,8 +10,14 @@ class LLMResponse:
     model_name: str
     temperature: Optional[float]
     response_text: str
-    usage: Dict[str, Any] = field(default_factory=dict)
-    raw: Dict[str, Any] = field(default_factory=dict)
+    usage: dict[str, Any] = field(default_factory=dict)
+    raw: dict[str, Any] = field(default_factory=dict)
+    usage_flat: dict[str, Any] = field(init = False)    # flattened version of usage
+    raw_flat: dict[str, Any] = field(init = False)      # flattened version of raw
+    
+    def __post_init__(self):
+        self.usage_flat = flatten_dict(self.usage)
+        self.raw_flat = flatten_dict(self.raw)
 
 
 def _parse_ollama_time(created_at: str) -> datetime:
@@ -42,7 +48,7 @@ def _parse_openai_time(created_at: int) -> datetime:
     return datetime.fromtimestamp(created_at, tz=timezone.utc)
 
 
-def from_ollama_responses(resp: Dict[str, Any]) -> LLMResponse:
+def from_ollama_responses(resp: dict[str, Any]) -> LLMResponse:
     usage = {
         "prompt_tokens": resp.get("prompt_eval_count"),
         "completion_tokens": resp.get("eval_count"),
@@ -70,7 +76,7 @@ def from_ollama_responses(resp: Dict[str, Any]) -> LLMResponse:
     )
 
 
-def from_openai_responses(resp: Dict[str, Any]) -> LLMResponse:
+def from_openai_responses(resp: dict[str, Any]) -> LLMResponse:
     response_text = ""
     output = resp.get("output") or []
     if output:
