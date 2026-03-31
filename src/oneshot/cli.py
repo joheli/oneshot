@@ -10,13 +10,11 @@ from typing import Annotated
 import typer
 from oneshot import __version__
 
-"""
-FUT
-"""
+app = typer.Typer()
+
+@app.command()
 def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True, readable=True, dir_okay=False)] = Path("oneshot.toml")):
-    f"""
-    oneshot version {__version__}
-    """
+
     cfg = Config.from_toml(config_file)
     
     records = []
@@ -48,4 +46,4 @@ def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True
         
     
 def cli():
-    typer.run(main)
+    app()
