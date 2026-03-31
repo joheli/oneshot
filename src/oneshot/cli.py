@@ -19,6 +19,9 @@ def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True
     
     records = []
     
+    # be friendly
+    print(f"Welcome friend! This is outshot version {__version__}. Have fun.\n")
+    
     for qid, rq in process_config(cfg):
         raw_response, elapsed = measure_time(requests.post,
                                      url = rq.url, headers = rq.headers, 
