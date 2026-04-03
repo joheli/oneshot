@@ -11,7 +11,7 @@
 Type `pip install https://github.com/joheli/oneshot.git` to install (optionally prepend with `uv`). You should execute the command in a fresh virtual environment, preferably created with [uv](https://docs.astral.sh/uv/) (i.e. after installation of uv type `uv venv`, then activate the environment with `source .venv/bin/activate`).
 
 > [!IMPORTANT]
-> When creating a virtual environment with `uv`, make sure your python version is at least 3.13 - this may not be the default on your machine. If necessary, explicitly type `uv venv --python 3.13` (see [uv docs](https://docs.astral.sh/uv/concepts/python-versions/)).
+> When creating a virtual environment with `uv`, make sure the selected python version is at least 3.13 - this may not be the default on your machine! If necessary, explicitly type `uv venv --python 3.13` (see [uv docs](https://docs.astral.sh/uv/concepts/python-versions/)).
 
 ## Usage
 
@@ -40,7 +40,9 @@ The `batch-text` variant currently allows you to store "contexts" in a column of
 
 #### Out
 
-In this section you can select if you want the LLM responses saved in a csv file or output on the command line.
+In this section you can specify if LLM responses are 
+  * output to the command line (default), or
+  * saved to a csv file (`mode = "file"`)
 
 ## Acknowledgements
 
