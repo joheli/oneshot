@@ -1,6 +1,6 @@
 import base64
 from pathlib import Path
-import cv2
+#import cv2
 import mimetypes
 from time import perf_counter
 from typing import Callable, TypeVar
@@ -24,21 +24,22 @@ def guess_image_mime(path: Path) -> str:
         # sensible generic default
         return "application/octet-stream"
     return mime
-        
-def rescale(frame, scales = (0.8, 0.3)):
-    width = int(frame.shape[1] * scales[0])
-    height = int(frame.shape[0] * scales[1])
-    dimensions = (width, height)
-    return cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
 
-def cv2_to_base64(img_bgr) -> str:
-    # Encode to JPEG (or PNG) in memory
-    ok, buf = cv2.imencode('.jpg', img_bgr)
-    if not ok:
-        raise RuntimeError("cv2.imencode failed")
-    # buf is a 1D uint8 array → bytes → base64 string
-    img_bytes = buf.tobytes()
-    return base64.b64encode(img_bytes).decode('utf-8')  # UTF‑8 string for JSON
+# Maybe add later:
+# def rescale(frame, scales = (0.8, 0.3)):
+#     width = int(frame.shape[1] * scales[0])
+#     height = int(frame.shape[0] * scales[1])
+#     dimensions = (width, height)
+#     return cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
+
+# def cv2_to_base64(img_bgr) -> str:
+#     # Encode to JPEG (or PNG) in memory
+#     ok, buf = cv2.imencode('.jpg', img_bgr)
+#     if not ok:
+#         raise RuntimeError("cv2.imencode failed")
+#     # buf is a 1D uint8 array → bytes → base64 string
+#     img_bytes = buf.tobytes()
+#     return base64.b64encode(img_bytes).decode('utf-8')  # UTF‑8 string for JSON
 
 T = TypeVar("T")
 

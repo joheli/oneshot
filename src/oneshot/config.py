@@ -70,6 +70,7 @@ class BatchText(pd.BaseModel):
     
 class BatchImage(Singleton):
     img_dir: pd.DirectoryPath
+    img_dir_glob: str|None = None
 
 class Query(pd.BaseModel):
     type: Literal["singleton-text", "singleton-image", "batch-text", "batch-image"]

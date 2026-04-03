@@ -9,13 +9,14 @@ api_key = "sk-proj-XXX"
 
 [query]
 # type can be "singleton-text", "singleton-image", "batch-text", or "batch-image"
-type = "singleton-text" 
+type = "batch-image" 
 
 # target can be "ollama" or "openai"
 # please also specify the corresponding vendor above!
 target = "ollama"
 
 # the model name and temperature (if supported) go here:
+# model_name = "gpt-4o"
 model_name = "gemma3:4b"
 temperature = 0.2
 
@@ -24,9 +25,9 @@ temperature = 0.2
 # different query types need different query details
 
 # query type "singleton-text" needs instructions, context, and question
-instructions = "You are a helpful assistant. Please answer the question using the context below."
-context = "Dragan Ismailovic and Yasmina Kovzova are married. Their children are called Sohar (girl) and Boban (boy)"
-question = "What is the name of Dragan Ismailovic' and Yasmina Kovzova's daughter?"
+#instructions = "You are a helpful assistant. Please answer the question using the context below."
+#context = "Dragan Ismailovic and Yasmina Kovzova are married. Their children are called Sohar (girl) and Boban (boy)"
+#question = "What is the name of Dragan Ismailovic' and Yasmina Kovzova's daughter?"
 
 # query type "singleton-image" needs instructions, question, and an image file
 #instructions = "You are a visual assistant. Please answer specifically and as briefly as possible to the question."
@@ -43,12 +44,13 @@ question = "What is the name of Dragan Ismailovic' and Yasmina Kovzova's daughte
 #colname_contexts = "contexts"
 
 # query type "batch-image" needs instructions, question, and an image directory
-#instructions = "You are a visual assistant. Please answer specifically and as briefly as possible to the question."
-#question = "Do you see raspberries? Please only answer 'yes', 'no', or 'uncertain'."
-#img_dir = "demo"
+instructions = "You are a visual assistant. Please answer specifically and as briefly as possible to the question."
+question = "Do you see persons? Please only answer 'yes', 'no', or 'uncertain'."
+img_dir = "demo"
+img_dir_glob = "*.png"
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")
 mode = "file"               # "file" or "standard"
-csv_file = "temp/out0.csv"  # this file must not exist; if it does, an error is raised.
+csv_file = "temp/out1.csv"  # this file must not exist; if it does, an error is raised.
 csv_file_separator = ";"    # the default is "," (comma); you can choose between comma, semicolon, and tab ("\t")

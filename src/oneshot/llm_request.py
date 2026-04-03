@@ -128,11 +128,14 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
         
     # batch-image
     elif (cfg.query.type == "batch-image"):
-        # here images are taken from a directory and looped over
-        # TODO:
-        # iterdir has to be replaced by glob.glob to filter only
-        # images!
-        for img_file in cfg.query.details.img_dir.iterdir():
+        # determine the file iterator:
+        #   default:            all the files in the directory
+        #   if glob supplied:   only the files corresponding to glob pattern    
+        img_files_it = cfg.query.details.img_dir.iterdir()
+        if cfg.query.details.img_dir_glob:
+            img_files_it = cfg.query.details.img_dir.glob(cfg.query.details.img_dir_glob)
+            
+        for img_file in img_files_it:
             # loop over images
             if (cfg.query.target == "ollama"):
                 # create ollama-specific arguments for reqfun
@@ -180,7 +183,6 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
                 # this should never happen, but let's be safe:
                 return ValueError(f"Target {cfg.query.target} is currently not implemented.")
             # pass the arguments to reqfun
-            # TODO: introduce row no. here
             yield row.get(cfg.query.details.colname_query_id, 'no query id'), reqfun(**args)
             
     else:

@@ -1,6 +1,6 @@
 [project]
 name = "oneshot"
-version = "0.0.5"
+version = "0.1.0"
 description = "Oneshot facilitates the issuing of 'one-shot' queries to LLMs."
 readme = "README.md"
 authors = [
@@ -9,7 +9,6 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "numpy>=2.4.3",
-    "opencv-python>=4.13.0.92",
     "polars>=1.39.3",
     "pydantic>=2.12.5",
     "requests>=2.32.5",
