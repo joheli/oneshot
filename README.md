@@ -6,12 +6,51 @@
 
 'One shot' means that the chat history is not stored. Actually, there is no 'chat' at all! Just questions and (hopefully) helpful answers from the LLM of your choosing.
 
+## Quickstart (1 minute)
+
+```bash
+git clone https://github.com/joheli/oneshot.git
+cd oneshot
+
+uv venv --python 3.13
+uv pip install .
+
+oneshot -c oneshot_images.toml
+```
+
+This processes the sample images in `demo/input` and writes results to `demo/output/out1.csv`. 
+
+---
+
+### further demos (2 minutes)
+
+Try also
+
+```bash
+oneshot -c oneshot_text_from_images.toml
+```
+
+for a demo on text extraction, and
+
+```bash
+oneshot -c oneshot_batch_text.toml
+```
+
+for a demo on oneshot text-only calls to LLMs.
+
+## Requirements
+
+- Python 3.13+
+- Images in .png, .jpg, or .jpeg
+- Access to either
+  - a ollama server, or 
+  - an active OpenAI API key
+
+---
+
 ## Install
 
-Type `pip install https://github.com/joheli/oneshot.git` to install (optionally prepend with `uv`). You should execute the command in a fresh virtual environment, preferably created with [uv](https://docs.astral.sh/uv/) (i.e. after installation of uv type `uv venv`, then activate the environment with `source .venv/bin/activate`).
-
-> [!IMPORTANT]
-> When creating a virtual environment with `uv`, make sure the selected python version is at least 3.13 - this may not be the default on your machine! If necessary, explicitly type `uv venv --python 3.13` (see [uv docs](https://docs.astral.sh/uv/concepts/python-versions/)).
+Type `uv pip install https://github.com/joheli/oneshot.git` to install, preferably into a fresh environment. This makes application `oneshot` available from the command line.
 
 ## Usage
 
@@ -46,7 +85,7 @@ In this section you can specify if LLM responses are
 
 ## Acknowledgements
 
-I would like to thank the creators of [NumPy](https://numpy.org/), [Polars](https://pola.rs/), [Pydantic](https://docs.pydantic.dev/latest/), [Rich] (https://rich.readthedocs.io), [Typer](https://typer.tiangolo.com/), and [uv](https://docs.astral.sh). They bring light into darkness. 
+I would like to thank the creators of [NumPy](https://numpy.org/), [Polars](https://pola.rs/), [Pydantic](https://docs.pydantic.dev/latest/), [Rich](https://rich.readthedocs.io), [Typer](https://typer.tiangolo.com/), and [uv](https://docs.astral.sh). They bring light into darkness. 
 
 
 

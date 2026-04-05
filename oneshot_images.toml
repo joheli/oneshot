@@ -2,7 +2,7 @@
 # Please specify at least one of: vendor.ollama, vendor.openai
 
 [vendor.ollama]
-host = "http://localhost:11434"
+host = "http://gpu:11434"
 
 [vendor.openai]
 api_key = "sk-proj-XXX"
@@ -45,12 +45,12 @@ temperature = 0.2
 
 # query type "batch-image" needs instructions, question, and an image directory
 instructions = "You are a visual assistant. Please answer specifically and as briefly as possible to the question."
-question = "Do you see persons? Please only answer 'yes', 'no', or 'uncertain'."
-img_dir = "demo"
-img_dir_glob = "*.png"
+question = "Do you see ships in the image? Please only answer 'yes', 'no', or 'uncertain'."
+img_dir = "demo/input"
+img_dir_glob = "image_*.jpg"
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")
 mode = "file"               # "file" or "standard"
-csv_file = "temp/out1.csv"  # this file must not exist; if it does, an error is raised.
+csv_file = "demo/output/out1.csv"  # this file must not exist; if it does, an error is raised.
 csv_file_separator = ";"    # the default is "," (comma); you can choose between comma, semicolon, and tab ("\t")
