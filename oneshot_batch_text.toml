@@ -47,6 +47,8 @@ colname_contexts = "contexts"
 #question = "Text recognition: "
 #img_dir = "demo/input"
 #img_dir_glob = "text_*.jpg"
+#img_qid = "filename-regex"    # 'filename' (default) or 'filename-regex'
+#img_qid_regex = "\\d{2}"      # use matching sequence as query id 
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")

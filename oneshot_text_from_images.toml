@@ -47,6 +47,8 @@ instructions = "" # empty as for model glm-ocr not required
 question = "Text recognition: " # this is what glm-ocr expects :)
 img_dir = "demo/input"
 img_dir_glob = "text_*.jpg"
+img_qid = "filename-regex"    # 'filename' (default) or 'filename-regex'
+img_qid_regex = "\\d{2}"      # use matching sequence as query id 
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")

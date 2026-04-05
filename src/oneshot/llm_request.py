@@ -3,6 +3,7 @@ from oneshot.config import Config
 from oneshot.utils import b64enc, guess_image_mime
 from oneshot.tables import csv_row_iterator
 from collections.abc import Iterator
+import re
 
 # A convenience class to hold requests to the LLM
 @dataclass
@@ -157,8 +158,16 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
             else:
                 # this should never happen, but let's be safe:
                 return ValueError(f"Target {cfg.query.target} is currently not implemented.")
+            # determine image qid
+            image_qid = img_file.name
+            if cfg.query.details.img_qid == "filename-regex":
+                p = re.compile(cfg.query.details.img_qid_regex)
+                matches = p.findall(img_file.name)
+                if len(matches) > 0:
+                    image_qid = matches[0]
+            
             # pass the arguments to reqfun
-            yield img_file.name, reqfun(**args)
+            yield image_qid, reqfun(**args)
             
     # batch-text
     elif (cfg.query.type == "batch-text"):

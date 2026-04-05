@@ -48,6 +48,8 @@ instructions = "You are a visual assistant. Please answer specifically and as br
 question = "Do you see ships in the image? Please only answer 'yes', 'no', or 'uncertain'."
 img_dir = "demo/input"
 img_dir_glob = "image_*.jpg"
+#img_qid = "filename-regex"    # 'filename' (default) or 'filename-regex'
+#img_qid_regex = "\\d{2}"      # use matching sequence as query id 
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")

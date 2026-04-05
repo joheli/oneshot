@@ -261,7 +261,9 @@ Expected fields:
 - `instructions`
 - `question`
 - `img_dir`
-- optionally `img_dir_glob`
+- optionally `img_dir_glob`: specifies which files to match in `img_dir`
+- optionally `img_qid`: "filename" as default, i.e. the whole filename is used as the query id (qid) in the output csv file
+- optionally `img_qid_regex`: if `img_qid` is set to 'filename-regex', a regex pattern extracting a character sequence of interest from the filename is used as qid
 
 Example:
 
