@@ -3,6 +3,7 @@ from typing_extensions import Self
 from typing import Literal, Annotated, Any
 from pathlib import Path
 import tomllib
+from oneshot.utils import bestfile 
 from oneshot.tables import csv_has_columns
 
 class Ollama(pd.BaseModel):
@@ -129,10 +130,11 @@ class Out(pd.BaseModel):
     @classmethod
     def validate_out_file(cls, v: Path) -> Path:
         # Example: require that parent directory exists, but file itself must NOT exist
-        if v.exists():
-            raise ValueError(f"File already exists: {v}")
         if not v.parent.exists():
             raise ValueError(f"Parent directory does not exist: {v.parent}")
+        if v.exists():
+            # change filename
+            v = bestfile(v)
         return v
     
 class Config(pd.BaseModel):

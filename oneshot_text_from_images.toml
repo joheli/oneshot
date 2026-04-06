@@ -53,5 +53,5 @@ img_qid_regex = "\\d{2}"      # use matching sequence as query id
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")
 mode = "file"               # "file" or "standard"
-csv_file = "demo/output/out2.csv"  # this file must not exist; if it does, an error is raised.
+csv_file = "demo/output/out2.csv"  # # if file exists, out3.csv will be created
 csv_file_separator = ";"    # the default is "," (comma); you can choose between comma, semicolon, and tab ("\t")

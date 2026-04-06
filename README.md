@@ -285,7 +285,7 @@ img_dir_glob = "*.png"
 
 - At least one provider must be configured in `[vendor]`.
 - The selected provider in `[query].target` must also be configured.
-- For file output, the output CSV **must not already exist**.
+- For file output, if the output CSV exists the filename is appended an integer.
 - For `batch-text`, the input CSV must contain the configured column names.
 - For `batch-image`, each matching file becomes one request.
 - The example files in the repository are a good starting point:

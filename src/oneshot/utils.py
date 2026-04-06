@@ -58,6 +58,25 @@ def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
         else:
             items[new_key] = v
     return items
+
+def bestfile(p: Path) -> Path:
+    # if p does not exist, return
+    if not p.exists():
+        return p
+    else:
+        # is the last character a digit?
+        if p.stem[-1].isdigit():
+            d = int(p.stem[-1])
+            new_file = p.parent.absolute() / f"{p.stem[:-1]}{d + 1}{p.suffix}"
+        else:
+            # append digit to stem
+            new_file = p.parent.absolute() / f"{p.stem}0{p.suffix}"
+        # return
+        return bestfile(new_file)
+            
+        
+
+
     
 if __name__ == "__main__":
     #b = b64enc(Path("demo/resized.jpg"))
