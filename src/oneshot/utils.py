@@ -72,12 +72,8 @@ def bestfile(p: Path) -> Path:
             # append digit to stem
             new_file = p.parent.absolute() / f"{p.stem}0{p.suffix}"
         # return
-        return bestfile(new_file)
-            
-        
+        return bestfile(new_file)    
 
-
-    
 if __name__ == "__main__":
     #b = b64enc(Path("demo/resized.jpg"))
     b = guess_image_mime(Path("README.md"))

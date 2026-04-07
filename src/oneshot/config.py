@@ -125,6 +125,8 @@ class Out(pd.BaseModel):
     mode: Literal["standard", "file"] = "standard"
     csv_file: Path
     csv_file_separator: Literal[",", ";", "\t"] = ","
+    response_to_file_length_threshold: int = 300
+    response_to_file_filename: str = "~qid~_response.txt"
     
     @pd.field_validator("csv_file")
     @classmethod
@@ -135,6 +137,14 @@ class Out(pd.BaseModel):
         if v.exists():
             # change filename
             v = bestfile(v)
+        return v
+    
+    @pd.field_validator("response_to_file_filename")
+    @classmethod
+    def validate_response_to_file_name(cls, v: str) -> str:
+        # ~qid~ MUST be present in response_to_file_name
+        if not "~qid~" in v:
+            raise ValueError(f"`response_to_file_filename`: {v} does not contain string `~qid~`!")
         return v
     
 class Config(pd.BaseModel):

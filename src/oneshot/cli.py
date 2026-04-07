@@ -2,7 +2,7 @@ from rich import print
 from oneshot.llm_request import process_config
 from oneshot.llm_response import RESPONSEFUN, LLMResponse
 from oneshot.config import Config
-from oneshot.utils import measure_time
+from oneshot.utils import measure_time, bestfile
 import requests
 import polars as pl
 from pathlib import Path
@@ -20,7 +20,12 @@ def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True
 
     cfg = Config.from_toml(config_file)
     
+    # records holds csv data rows
     records = []
+    
+    # writeout holds text data to be written into a file
+    # this is only necessary for long responses
+    writeout = []
     
     # be friendly
     #print(f"Welcome friend! This is outshot version {__version__}. Have fun.\n")
@@ -34,11 +39,25 @@ def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True
             #print(resp.json())
             responsefun = RESPONSEFUN[cfg.query.target]
             response = responsefun(raw_response.json())
+            
+            # check length of LLM response
+            response_text_llm = response.response_text
+            
+            # if length of LLM response is over specified threshold, save in writeout to
+            # be later written to file (see below)
+            if len(response_text_llm) > cfg.out.response_to_file_length_threshold:
+                response_to_file_filename = cfg.out.response_to_file_filename.replace("~qid~", qid)
+                writeout.append({
+                    "file": response_to_file_filename,
+                    "content": response.response_text
+                })
+                response_text_llm = f"see {response_to_file_filename}"
+                
             record = {"Query ID": qid,
                     "Provider": response.provider,
                     "Timepoint (UTC)": response.timepoint,
                     "Model name": response.model_name,
-                    "Response": response.response_text,
+                    "Response": response_text_llm,
                     "Elapsed (seconds)": format(elapsed, ".3f"),
                     "Usage": str(response.usage_flat)}
             records.append(record)
@@ -56,10 +75,17 @@ def main(config_file: Annotated[Path, typer.Option("-c", "--config", exists=True
         
         
         if cfg.out.mode == "file":
-            #task = progress.add_task(description="writing to file", total = None)
+            # write out responses to csv file
             df = pl.DataFrame(records)
             df.write_csv(cfg.out.csv_file, separator = cfg.out.csv_file_separator)
-            #progress.remove_task(task_id=task)        
+            
+            # if writeout content present, write the contents to file    
+            if len(writeout) > 0:
+                for w in writeout:
+                    writeout_file = cfg.out.csv_file.parent / w.get("file")
+                    writeout_file_best = bestfile(writeout_file)
+                    writeout_file_best.write_text(w.get("content"), encoding="utf-8")
+                    
     
 def cli():
     app()

@@ -152,12 +152,15 @@ Controls where results go.
 mode = "file"
 csv_file = "demo/output/out.csv"
 csv_file_separator = ";"
+# further optional parameters:
+response_to_file_length_threshold = 300               # default = 300, answers over 300 characters are written to separate file `response_to_file_filename`
+response_to_file_filename = "~qid~_llm_response.txt"  # `~qid~` is a placeholder and will be replaced by query id 
 ```
 
 Output modes:
 
 - `standard` → print responses to the terminal
-- `file` → save responses to CSV
+- `file` → save responses to CSV and optionally long responses to text files
 
 ## Query types in detail
 

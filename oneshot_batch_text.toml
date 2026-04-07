@@ -52,6 +52,8 @@ colname_contexts = "contexts"
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")
-mode = "file"               # "file" or "standard"
-csv_file = "demo/output/out3.csv"  # this file must not exist; if it does, an error is raised.
-csv_file_separator = ";"    # the default is "," (comma); you can choose between comma, semicolon, and tab ("\t")
+mode = "file"                                           # "file" or "standard"
+csv_file = "demo/output/out3.csv"                       # if file exists, out4.csv will be created
+csv_file_separator = ";"                                # the default is "," (comma); you can choose between comma, semicolon, and tab ("\t")
+response_to_file_length_threshold = 300                 # default 300, i.e. answers with more than 300 characters are written into separate file `response_to_file_filename`
+response_to_file_filename = "~qid~_llm_response.txt"    # `~qid~` is a placeholder and will be replaced by query id 
