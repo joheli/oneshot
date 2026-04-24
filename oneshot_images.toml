@@ -5,7 +5,7 @@
 host = "http://gpu:11434"
 
 [vendor.openai]
-api_key = "sk-proj-XXX"
+api_key = "sk-proj-xxx"
 
 [query]
 # type can be "singleton-text", "singleton-image", "batch-text", or "batch-image"
@@ -16,9 +16,9 @@ type = "batch-image"
 target = "ollama"
 
 # the model name and temperature (if supported) go here:
-# model_name = "gpt-4o"
+#model_name = "gpt-4o"
 model_name = "gemma3:4b"
-temperature = 0.2
+temperature = 0
 
 [query.details]
 # query type can be "singleton-text", "singleton-image", "batch-text", or "batch-image", see above
@@ -45,14 +45,15 @@ temperature = 0.2
 
 # query type "batch-image" needs instructions, question, and an image directory
 instructions = "You are a visual assistant. Please answer specifically and as briefly as possible to the question."
-question = "Do you see ships in the image? Please only answer 'yes', 'no', or 'uncertain'."
+question = "You are presented three pictures. The first shows a clear sky. The second a cloudy sky. Does the third picture show clouds? Please only answer 'yes', 'no', or 'uncertain'."
 img_dir = "demo/input"
-img_dir_glob = "image_*.jpg"
+img_dir_glob = "comparison_*.png"
+ref_imgs = ["demo/input/ref_clear.png", "demo/input/ref_cloud.png"]
 #img_qid = "filename-regex"    # 'filename' (default) or 'filename-regex'
 #img_qid_regex = "\\d{2}"      # use matching sequence as query id 
 
 [out]
 # mode directs the output to standard output ("standard") or a csv file ("file")
 mode = "file"                       # "file" or "standard"
-csv_file = "demo/output/out1.csv"   # if file exists, out2.csv will be created
+csv_file = "demo/output/out_clouds.csv"   # if file exists, out2.csv will be created
 csv_file_separator = ";"            # the default is "," (comma); you can choose between comma, semicolon, and tab ("\t")

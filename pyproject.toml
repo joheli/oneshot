@@ -1,6 +1,6 @@
 [project]
 name = "oneshot"
-version = "0.1.4"
+version = "0.1.5"
 description = "Oneshot facilitates the issuing of 'one-shot' queries to LLMs."
 readme = "README.md"
 authors = [

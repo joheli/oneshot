@@ -214,6 +214,8 @@ question = "Do you see raspberries?"
 image = "demo/input/berries.png"
 ```
 
+Optionally, you can add reference images to `query.details` under `ref_imgs`, e.g. `ref_imgs = ["demo/input/ref_clear.png", "demo/input/ref_cloud.png"]`.
+
 ### `batch-text`
 
 Read prompts from a CSV file and send one request per row.
@@ -264,6 +266,7 @@ Expected fields:
 - `instructions`
 - `question`
 - `img_dir`
+- optionally, `ref_imgs`: specifies reference images, e.g. `ref_imgs = ["demo/input/ref_clear.png", "demo/input/ref_cloud.png"]`.
 - optionally `img_dir_glob`: specifies which files to match in `img_dir`
 - optionally `img_qid`: "filename" as default, i.e. the whole filename is used as the query id (qid) in the output csv file
 - optionally `img_qid_regex`: if `img_qid` is set to 'filename-regex', a regex pattern extracting a character sequence of interest from the filename is used as qid
@@ -306,18 +309,6 @@ It is especially handy for:
 - quick model benchmarking on repeated prompts
 - image labeling or extraction jobs
 - generating CSV outputs for downstream analysis
-
-## Project structure
-
-```text
-src/oneshot/
-├── cli.py
-├── config.py
-├── llm_request.py
-├── llm_response.py
-├── tables.py
-└── utils.py
-```
 
 ## Acknowledgements
 

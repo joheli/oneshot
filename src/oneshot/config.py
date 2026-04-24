@@ -43,10 +43,13 @@ class Singleton(pd.BaseModel):
     instructions: str
     question: str
     
+class BaseImage(Singleton):
+    ref_imgs: list[pd.FilePath] | None = None
+    
 class SingletonText(Singleton):
     context: str
 
-class SingletonImage(Singleton):
+class SingletonImage(BaseImage):
     image: pd.FilePath
     
 class BatchText(pd.BaseModel):
@@ -69,7 +72,7 @@ class BatchText(pd.BaseModel):
             raise ValueError(f"{self.csv_file.name} does not have required column names {required_columns}.")
         return self
     
-class BatchImage(Singleton):
+class BatchImage(BaseImage):
     img_dir: pd.DirectoryPath
     img_dir_glob: str|None = None
     img_qid: Literal["filename", "filename-regex"] = "filename"
