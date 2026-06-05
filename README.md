@@ -1,5 +1,8 @@
 # oneshot
 
+> [!NOTE]
+> `oneshot` was recently used in a bid to [The Gemma 4 Good Hackathon](https://github.com/joheli/gemma4-hackathon)!
+
 `oneshot` is a small command-line tool for sending **single, stateless requests** to large language models. It is built for cases where you do not want an ongoing chat session—just a prompt, a response, and optionally a CSV file with the results.
 
 At the moment, `oneshot` supports:
