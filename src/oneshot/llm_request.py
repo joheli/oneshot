@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from oneshot.config import Config
-from oneshot.utils import b64enc, guess_image_mime
+from oneshot.utils import b64enc, guess_image_mime, pth
 from oneshot.tables import csv_row_iterator
 from collections.abc import Iterator
 import re
@@ -76,6 +76,7 @@ def request_ollama(model_name: str,
     if not url:
         raise ValueError("Argument 'url' must be supplied!")
     headers = {} # empty by default, actually not needed
+    
     # if context is provided, place between <context></context> tags
     context_x = f"<context>\n{context}\n</context>" if context else None
     # place instructions, context, and question into prompt
@@ -112,22 +113,19 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
         # finally place "image" into "images"
         images.append(ImageInput(guess_image_mime(cfg.query.details.image), b64=b64enc(cfg.query.details.image)))
         
+        # create arguments shared by ollama and openai
+        args = {"images": images,
+                "question": pth(cfg.query.details.question),
+                "instructions": pth(cfg.query.details.instructions),
+                "model_name": cfg.query.model_name,
+                "temperature": cfg.query.temperature}
+        
         if (cfg.query.target == "ollama"):
             # create ollama-specific arguments for reqfun
-            args = {"url": cfg.vendor.ollama.url, 
-                    "images": images,
-                    "question": cfg.query.details.question,
-                    "instructions": cfg.query.details.instructions,
-                    "model_name": cfg.query.model_name,
-                    "temperature": cfg.query.temperature}
+            args.update({"url": cfg.vendor.ollama.url})
         elif (cfg.query.target == "openai"):
             # create openai-specific arguments for reqfun
-            args = {"images": images,
-                    "question": cfg.query.details.question,
-                    "instructions": cfg.query.details.instructions,
-                    "model_name": cfg.query.model_name,
-                    "api_key": cfg.vendor.openai.api_key,
-                    "temperature": cfg.query.temperature}
+            args.update({"api_key": cfg.vendor.openai.api_key})
         else:
             # this should never happen, but let's be safe:
             return ValueError(f"Target {cfg.query.target} is currently not implemented.")
@@ -136,22 +134,19 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
     
     # singleton-text
     elif (cfg.query.type == "singleton-text"):
+        # create arguments shared by openai and ollama
+        args = {"question": pth(cfg.query.details.question),
+                "context": pth(cfg.query.details.context),
+                "instructions": pth(cfg.query.details.instructions),
+                "model_name": cfg.query.model_name,
+                "temperature": cfg.query.temperature}
+        
         if (cfg.query.target == "ollama"):
             # create ollama-specific arguments for reqfun
-            args = {"url": cfg.vendor.ollama.url, 
-                    "question": cfg.query.details.question,
-                    "context": cfg.query.details.context,
-                    "instructions": cfg.query.details.instructions,
-                    "model_name": cfg.query.model_name,
-                    "temperature": cfg.query.temperature}
+            args.update({"url": cfg.vendor.ollama.url})
         elif (cfg.query.target == "openai"):
             # create openai-specific arguments for reqfun
-            args = {"question": cfg.query.details.question,
-                    "instructions": cfg.query.details.instructions,
-                    "context": cfg.query.details.context,
-                    "model_name": cfg.query.model_name,
-                    "api_key": cfg.vendor.openai.api_key,
-                    "temperature": cfg.query.temperature}
+            args.update({"api_key": cfg.vendor.openai.api_key})
         else:
             # this should never happen, but let's be safe:
             return ValueError(f"Target {cfg.query.target} is currently not implemented.")
@@ -166,7 +161,8 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
         img_files_it = cfg.query.details.img_dir.iterdir()
         if cfg.query.details.img_dir_glob:
             img_files_it = cfg.query.details.img_dir.glob(cfg.query.details.img_dir_glob)
-            
+        
+        # loop over files
         for img_file in img_files_it:
             # loop over images
             # package images into list of ImageInput
@@ -179,22 +175,19 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
             images.append(ImageInput(mimetype=guess_image_mime(img_file), b64=b64enc(img_file)))
             
             # pass on to ollama or openai
+            # create arguments shared by openai and ollama
+            args = {"images": images,
+                    "question": pth(cfg.query.details.question),
+                    "instructions": pth(cfg.query.details.instructions),
+                    "model_name": cfg.query.model_name,
+                    "temperature": cfg.query.temperature}
+            
             if (cfg.query.target == "ollama"):
                 # create ollama-specific arguments for reqfun
-                args = {"url": cfg.vendor.ollama.url, 
-                        "images": images,
-                        "question": cfg.query.details.question,
-                        "instructions": cfg.query.details.instructions,
-                        "model_name": cfg.query.model_name,
-                        "temperature": cfg.query.temperature}
+                args.update({"url": cfg.vendor.ollama.url})
             elif (cfg.query.target == "openai"):
                 # create openai-specific arguments for reqfun
-                args = {"images": images,
-                        "question": cfg.query.details.question,
-                        "instructions": cfg.query.details.instructions,
-                        "model_name": cfg.query.model_name,
-                        "api_key": cfg.vendor.openai.api_key,
-                        "temperature": cfg.query.temperature}
+                args.update({"api_key": cfg.vendor.openai.api_key})
             else:
                 # this should never happen, but let's be safe:
                 return ValueError(f"Target {cfg.query.target} is currently not implemented.")
@@ -214,20 +207,18 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
         # here rows are taken from a csv file and looped over
         for row in csv_row_iterator(cfg.query.details.csv_file):
             # loop over rows
+            # create arguments shared by openai and ollama
+            args = {"question": pth(row.get(cfg.query.details.colname_questions, '')),
+                    "context": pth(row.get(cfg.query.details.colname_contexts, '')),
+                    "instructions": pth(row.get(cfg.query.details.colname_instructions, '')),
+                    "model_name": cfg.query.model_name}
+            
             if (cfg.query.target == "ollama"):
                 # create ollama-specific arguments for reqfun
-                args = {"url": cfg.vendor.ollama.url, 
-                        "question": row.get(cfg.query.details.colname_questions, ''),
-                        "context": row.get(cfg.query.details.colname_contexts, ''),
-                        "instructions": row.get(cfg.query.details.colname_instructions, ''),
-                        "model_name": cfg.query.model_name}
+                args.update({"url": cfg.vendor.ollama.url})
             elif (cfg.query.target == "openai"):
                 # create openai-specific arguments for reqfun
-                args = {"question": row.get(cfg.query.details.colname_questions, ''),
-                        "context": row.get(cfg.query.details.colname_contexts, ''),
-                        "instructions": row.get(cfg.query.details.colname_instructions, ''),
-                        "model_name": cfg.query.model_name,
-                        "api_key": cfg.vendor.openai.api_key}
+                args.update({"api_key": cfg.vendor.openai.api_key})
             else:
                 # this should never happen, but let's be safe:
                 return ValueError(f"Target {cfg.query.target} is currently not implemented.")

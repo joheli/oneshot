@@ -126,11 +126,13 @@ class Query(pd.BaseModel):
     
 class Out(pd.BaseModel):
     mode: Literal["standard", "file"] = "standard"
-    csv_file: Path
+    csv_file: Path | None # This does not work yet
     csv_file_separator: Literal[",", ";", "\t"] = ","
     response_to_file_length_threshold: int = 300
     response_to_file_filename: str = "~qid~_response.txt"
     
+    # TODO: adapt the validator so it accepts csv_file to be None
+    # Probably one needs to specify "mode='after'" in pd.field_validator.
     @pd.field_validator("csv_file")
     @classmethod
     def validate_out_file(cls, v: Path) -> Path:

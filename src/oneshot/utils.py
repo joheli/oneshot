@@ -1,9 +1,11 @@
 import base64
 from pathlib import Path
-#import cv2
 import mimetypes
 from time import perf_counter
 from typing import Callable, TypeVar
+import re
+
+PREFIX_FILE_PATTERN = re.compile(r'^\[>\]') # strings beginning with prefix [>] possibly carry a pathlib.Path!
 
 def b64enc(fl: Path) -> str:
     try:
@@ -24,22 +26,6 @@ def guess_image_mime(path: Path) -> str:
         # sensible generic default
         return "application/octet-stream"
     return mime
-
-# Maybe add later:
-# def rescale(frame, scales = (0.8, 0.3)):
-#     width = int(frame.shape[1] * scales[0])
-#     height = int(frame.shape[0] * scales[1])
-#     dimensions = (width, height)
-#     return cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
-
-# def cv2_to_base64(img_bgr) -> str:
-#     # Encode to JPEG (or PNG) in memory
-#     ok, buf = cv2.imencode('.jpg', img_bgr)
-#     if not ok:
-#         raise RuntimeError("cv2.imencode failed")
-#     # buf is a 1D uint8 array → bytes → base64 string
-#     img_bytes = buf.tobytes()
-#     return base64.b64encode(img_bytes).decode('utf-8')  # UTF‑8 string for JSON
 
 T = TypeVar("T")
 
@@ -74,7 +60,61 @@ def bestfile(p: Path) -> Path:
         # return
         return bestfile(new_file)    
 
+def path_in_string(s: str, *, path_pattern: re.Pattern = PREFIX_FILE_PATTERN, only_existing = True, no_dir = True) -> Path | None:
+    """ 
+    `path_in_string` checks whether a path is hidden in a string.
+    Strings potentially carrying paths start with `PREFIX_FILE_PATTERN` [>].
+    The function returns the found path or None, if no path was verified.
+    """
+    # if the prefix is present then a split returns exactly 2 parts
+    parts = path_pattern.split(s)
+    if len(parts) == 2:
+        # ok
+        possible_path = parts[1] # the second part possibly contains a path
+        try:
+            extracted_path = Path(possible_path)
+            if only_existing:
+                assert(extracted_path.exists())
+            if no_dir:
+                assert(not extracted_path.is_dir())
+            return extracted_path
+        except:
+            # any error suggests there is no path hidden in the string
+            return
+    else:
+        # if length is not exactly 2 it's not worth looking
+        return
+    
+def textfile_content(t: Path, *, enc:str = "utf-8") -> str:
+    try:
+        with t.open(mode="r", encoding=enc) as tf:
+            content = tf.read()
+        return content
+    except:
+        return ""
+
+def pth(s: str, *, path_pattern = PREFIX_FILE_PATTERN) -> str:
+    """ 
+    `pth` takes a string and checks whether it carries a path to a text file.
+    If yes, it returns the contents of the file as a string.
+    If no, it returns `s` unchanged.
+    """
+    res = s
+    p = path_in_string(s, path_pattern=path_pattern)
+    if p:
+        res = textfile_content(p)
+    return res
+        
+
 if __name__ == "__main__":
     #b = b64enc(Path("demo/resized.jpg"))
-    b = guess_image_mime(Path("README.md"))
-    print(b)
+    #b = guess_image_mime(Path("README.md"))
+    #print(b)
+    path1 = "[>]README.md"
+    path2 = "Kerstin"
+    path3 = "[>]demo/input/comparison_dunno.png"
+    path4 = "[>]demo/fujo.txt"
+    path5 = "[>]demo/input"
+    path6 = ""
+    print(f"""p1: {pth(path1)[:50]}, p2: {pth(path2)[:50]}, p3: {pth(path3)[:50]}, 
+          p4: {pth(path4)[:50]}, p5: {pth(path5)[:50]}, p6: {pth(path6)[:50]}""")

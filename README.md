@@ -192,6 +192,8 @@ context = "Paris is the capital of France."
 question = "What is the capital of France?"
 ```
 
+Starting version 0.1.6 you can replace any text content with a path to a text file. The path is labeled with prefix "[>]". This works both in `singleton-text` as well as `batch-text` mode.
+
 ### `singleton-image`
 
 Send one image plus a text prompt.
@@ -258,7 +260,10 @@ A minimal CSV for `batch-text` should look like this:
 qid,instructions,questions,contexts
 q1,"Answer briefly.","What is 2 + 2?",""
 q2,"Use the context.","Who is the daughter?","Dragan and Yasmina have a daughter called Sohar."
+q3,"You are helpful","Summarize in two sentences","[>]demo/input/context.txt"
 ```
+
+Starting version 0.1.6 you can replace any text content with a path to a text file. The path is labeled with prefix "[>]".
 
 ### `batch-image`
 
