@@ -1,6 +1,6 @@
 [project]
 name = "oneshot"
-version = "0.1.6"
+version = "0.1.7"
 description = "Oneshot facilitates the issuing of 'one-shot' queries to LLMs."
 readme = "README.md"
 authors = [
@@ -26,4 +26,5 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ptpython>=3.0.32",
+    "ruff>=0.15.20",
 ]
