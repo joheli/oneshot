@@ -1,6 +1,6 @@
 from rich import print
-from oneshot.llm_request import process_config
-from oneshot.llm_response import RESPONSEFUN, LLMResponse
+from oneshot.llm_request import process_config, curl_log_message
+from oneshot.llm_response import RESPONSEFUN
 from oneshot.config import Config
 from oneshot.utils import measure_time, bestfile
 import requests
@@ -10,6 +10,38 @@ from typing import Annotated
 import typer
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from oneshot import __version__
+from loguru import logger
+
+# import sys
+
+# configure once at module import time
+logger.remove()
+
+# # Do not log to the console for the time being.
+# logger.add(
+#     sys.stderr,
+#     level="INFO",
+#     colorize=True,
+#     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+#            "<level>{level: <8}</level> | "
+#            "{extra[qid]} | {message}",
+# )
+
+logger.add(
+    "oneshot.log",
+    level="DEBUG",
+    rotation="1 week",
+    retention="8 weeks",
+    compression="zip",
+    enqueue=True,
+    backtrace=True,
+    diagnose=False,
+    format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[qid]} | {name}:{function}:{line} | {message}",
+)
+
+
+def get_logger(qid: str | None = None):
+    return logger.bind(qid=qid or "-")
 
 app = typer.Typer()
 
@@ -24,18 +56,19 @@ def main(
         Path, typer.Option("-c", "--config", exists=True, readable=True, dir_okay=False)
     ] = Path("oneshot.toml"),
 ):
+    log = get_logger()
+    log.info("Starting oneshot with config file '{}'", config_file)
 
-    cfg = Config.from_toml(config_file)
+    try:
+        cfg = Config.from_toml(config_file)
+        log.info("Configuration loaded successfully")
+        log.debug("Output mode='{}', target='{}'", cfg.out.mode, cfg.query.target)
+    except Exception:
+        log.exception("Failed to load configuration from '{}'", config_file)
+        raise
 
-    # records holds csv data rows
     records = []
-
-    # writeout holds text data to be written into a file
-    # this is only necessary for long responses
     writeout = []
-
-    # be friendly
-    # print(f"Welcome friend! This is outshot version {__version__}. Have fun.\n")
 
     with Progress(
         SpinnerColumn(),
@@ -43,37 +76,66 @@ def main(
         transient=True,
     ) as progress:
         for qid, rq in process_config(cfg):
+            qlog = get_logger(str(qid))
+            qlog.info("Processing query started")
+            qlog.debug("Request prepared for url='{}'", rq.url)
+
             task = progress.add_task(
                 description=f"processing query identifier '{qid}'", total=None
             )
-            raw_response, elapsed = measure_time(
-                requests.post, url=rq.url, headers=rq.headers, json=rq.json
-            )
-            # print(resp.json())
-            responsefun = RESPONSEFUN[cfg.query.target]
-            response = responsefun(raw_response.json())
 
-            # check length of LLM response
+            try:
+                # record the whole request so it can be passed on:
+                #qlog.debug("Data passed to API:\nurl: {}\nheaders: {}\njson body:\n{}\n\n\n", rq.url, rq.headers, rq.json)
+                qlog.debug("Curl call to reproduce API call\n{}", curl_log_message(rq))
+                raw_response, elapsed = measure_time(
+                    requests.post, url=rq.url, headers=rq.headers, json=rq.json
+                )
+                qlog.info(
+                    "HTTP POST completed with status_code={} in {:.3f}s",
+                    raw_response.status_code,
+                    elapsed,
+                )
+                raw_response.raise_for_status()
+            except requests.RequestException:
+                qlog.exception("HTTP POST failed")
+                progress.remove_task(task_id=task)
+                continue
+
+            try:
+                responsefun = RESPONSEFUN[cfg.query.target]
+                response = responsefun(raw_response.json())
+                qlog.debug(
+                    "Response parsed: provider='{}', model='{}'",
+                    response.provider,
+                    response.model_name,
+                )
+            except Exception:
+                qlog.exception("Failed to decode or transform API response")
+                progress.remove_task(task_id=task)
+                continue
+
             response_text_llm = response.response_text
+            qlog.debug("LLM response length={}", len(response_text_llm))
+            qlog.debug("The actual text returned from the LLM:\n\n{}\n\n", response_text_llm)
 
-            # If length of the LLM response is longer than the specified threshold, save response in list `writeout`.
-            # `writeout` will later be processed, i.e. contents will be written to file (see below)
             if len(response_text_llm) > cfg.out.response_to_file_length_threshold:
-                # Determine filename to write long LLM response into:
                 response_to_file_filename = cfg.out.response_to_file_filename.replace(
                     "~qid~", str(qid)
                 )
-                # Append dict containing filename and content (= LLM response) to `writeout`
                 writeout.append(
                     {
                         "file": response_to_file_filename,
                         "content": response.response_text,
                     }
                 )
-                # Suggest placeholder text into csv file:
+                qlog.info(
+                    "Response exceeds threshold {}; queued for separate file '{}'",
+                    cfg.out.response_to_file_length_threshold,
+                    response_to_file_filename,
+                )
                 response_text_llm = f"see {response_to_file_filename}"
 
-            # `record` is the data row to be written to the csv file
             record = {
                 "Query ID": qid,
                 "Provider": response.provider,
@@ -84,34 +146,42 @@ def main(
                 "Usage": str(response.usage_flat),
             }
             records.append(record)
+            qlog.info("Record appended; total records={}", len(records))
 
-            # print to "standard out" if so specified
             if cfg.out.mode == "standard":
+                qlog.debug("Writing response to standard output")
                 print(f"Model {response.model_name} on {response.provider}:")
                 print(f"Query id: {qid}")
                 print(f"Response: {response.response_text}")
                 print(f"Timepoint (UTC): {response.timepoint}")
                 print(f"Elapsed: {elapsed:.3f} seconds\n")
 
-            # remove the line from the progress
             progress.remove_task(task_id=task)
+            qlog.info("Processing query finished")
 
-        # if output to file specified, write results to csv file
         if cfg.out.mode == "file":
-            # write out responses to csv file
-            # this is appropriate for short llm responses, in which case list `writeout` is empty
-            df = pl.DataFrame(records)
-            df.write_csv(cfg.out.csv_file, separator=cfg.out.csv_file_separator)
+            try:
+                log.info("Writing {} records to csv '{}'", len(records), cfg.out.csv_file)
+                df = pl.DataFrame(records)
+                df.write_csv(cfg.out.csv_file, separator=cfg.out.csv_file_separator)
+                log.info("CSV written successfully to {}", cfg.out.csv_file)
+            except Exception:
+                log.exception("Failed to write csv output")
+                raise
 
-            # if writeout content is present, write the contents to a separate file (as it does not fit into the csv file)
-            # writeout means: cfg.out.response_to_file_length_threshold has been surpassed,
-            # therefore the llm response is written out to a separate file, not into
-            # the csv file.
             if len(writeout) > 0:
+                log.info("Writing {} long responses to separate files", len(writeout))
                 for w in writeout:
-                    writeout_file = cfg.out.csv_file.parent / w.get("file")
-                    writeout_file_best = bestfile(writeout_file)
-                    writeout_file_best.write_text(w.get("content"), encoding="utf-8")
+                    try:
+                        writeout_file = cfg.out.csv_file.parent / w.get("file")
+                        writeout_file_best = bestfile(writeout_file)
+                        writeout_file_best.write_text(w.get("content"), encoding="utf-8")
+                        log.info("Wrote long response file '{}'", writeout_file_best)
+                    except Exception:
+                        log.exception("Failed to write long response file '{}'", w.get("file"))
+                        raise
+
+    log.info("Run completed successfully: {} records, {} long-response files", len(records), len(writeout))
 
 
 def cli():

@@ -4,7 +4,8 @@ from oneshot.utils import b64enc, guess_image_mime, pth
 from oneshot.tables import csv_row_iterator
 from collections.abc import Iterator
 import re
-
+import json
+from shlex import quote
 
 # A convenience class to hold requests to the LLM
 @dataclass
@@ -34,6 +35,9 @@ def request_openai(
     url: str | None = "https://api.openai.com/v1/responses",
     temperature: float = 0.0,
 ) -> LLMRequest:
+    """ 
+    This function creates a `LLMRequest` object for calls to the OpenAI REST API.
+    """
     # header contains the api key
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
@@ -84,6 +88,9 @@ def request_ollama(
     url: str | None = None,
     temperature: float = 0.0,
 ) -> LLMRequest:
+    """ 
+    This function creates a `LLMRequest` object for calls to the Ollama REST API.
+    """
     if not url:
         raise ValueError("Argument 'url' must be supplied!")
     headers = {}  # empty by default, actually not needed
@@ -112,6 +119,10 @@ REQUESTFUN = {"openai": request_openai, "ollama": request_ollama}
 
 # `process_config` is a function that takes a config object and returns an iterator yielding LLMRequest objects
 def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
+    """ 
+    This function processes the Config object and returns LLMRequest objects 
+    that can then be passed on to the APIs.
+    """
     # function for generating LLMRequest objects
     reqfun = REQUESTFUN[cfg.query.target]
 
@@ -276,6 +287,25 @@ def process_config(cfg: Config) -> Iterator[tuple[str, LLMRequest]]:
         # this should never happen, but let's be safe:
         return ValueError(f"Query type {cfg.query.type} is currently not implemented.")
 
+def curl_log_message(rq: LLMRequest) -> str:
+    """
+    This function transforms a LLMRequest into a curl call that can
+    be used for debugging, if necessary.
+    """
+    # is headers present, i.e. truthy? ({}, "", and None are falsy!)
+    # ollama headers are {}, i.e. empty ergo falsy.
+    additional_curl_headers = ""
+    if rq.headers:
+        additional_curl_headers = " ".join(
+            f"-H {quote(f'{k}: {v}')}" for k, v in rq.headers.items()
+        )
+        additional_curl_headers = f"{additional_curl_headers} " # add space
+
+    body = quote(json.dumps(rq.json, ensure_ascii=False))
+
+    curl_debug_command = f"Repro curl:\ncurl -X POST {rq.url} {additional_curl_headers}-H 'Content-Type: application/json' -d {body}\n"
+
+    return curl_debug_command
 
 if __name__ == "__main__":
     pass

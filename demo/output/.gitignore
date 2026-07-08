@@ -1,0 +1,4 @@
+# ignore contents, except .gitignore and .gitkeep
+*
+!.gitignore
+!.gitkeep

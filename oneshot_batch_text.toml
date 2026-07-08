@@ -16,7 +16,7 @@ type = "batch-text"
 target = "ollama"
 
 # the model name and temperature (if supported) go here:
-model_name = "gemma3:4b"
+model_name = "gemma4:e4b"
 temperature = 0
 
 [query.details]

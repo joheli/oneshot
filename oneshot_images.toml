@@ -2,7 +2,7 @@
 # Please specify at least one of: vendor.ollama, vendor.openai
 
 [vendor.ollama]
-host = "http://gpu:11434"
+host = "http://172.22.100.39:11434"
 
 [vendor.openai]
 api_key = "sk-proj-xxx"
