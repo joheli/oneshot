@@ -79,6 +79,13 @@ def request_openai(
 
 
 # ollama
+# TODO
+# Allow context window to be changed if "done_reason":"length"! 
+# "options": {
+#  "temperature": 0.0,
+#  "num_predict": -1,
+#  "num_ctx": 8192 # can go up much higher
+#}
 def request_ollama(
     model_name: str,
     question: str,

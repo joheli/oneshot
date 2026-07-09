@@ -332,3 +332,8 @@ Thanks to the creators of:
 ## License
 
 MIT
+
+## ToDos
+
+- [ ] Record and monitor reasons for stop, e.g. `"done_reason":"length"` in ollama
+- [ ] Programmatically attempt increasing context window (e.g. `num_ctx`, and `num_predict` for ollama), if context window is too small 

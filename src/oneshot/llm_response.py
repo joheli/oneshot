@@ -3,6 +3,10 @@ from typing import Any, Optional
 from datetime import datetime, timezone
 from oneshot.utils import flatten_dict
 
+# TODO
+# LLMResponse needs to catch "done_reason"!
+# if "done_reason":"length", then context window has to be increased!
+# in ollama "done_reason":"stop" is the answer to look for!
 @dataclass
 class LLMResponse:
     provider: str                 # "ollama" or "openai"
