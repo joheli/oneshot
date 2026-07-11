@@ -335,5 +335,6 @@ MIT
 
 ## ToDos
 
-- [ ] Record and monitor reasons for stop, e.g. `"done_reason":"length"` in ollama
-- [ ] Programmatically attempt increasing context window (e.g. `num_ctx`, and `num_predict` for ollama), if context window is too small 
+- [ ] Record and monitor reasons for stop, (e.g. `"done_reason":"length"` with ollama or `"finish_reason":"stop"` with OpenAI)
+- [ ] Programmatically attempt increasing context window (e.g. `num_ctx`, and `num_predict` for ollama), if context window is too small (for OpenAI context window is fixed but `"max_tokens"` controls the numbers of tokens generated)
+- [ ] Implement timeout in `requests.post` calls

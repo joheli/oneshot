@@ -89,7 +89,7 @@ def main(
                 #qlog.debug("Data passed to API:\nurl: {}\nheaders: {}\njson body:\n{}\n\n\n", rq.url, rq.headers, rq.json)
                 qlog.debug("Curl call to reproduce API call\n{}", curl_log_message(rq))
                 raw_response, elapsed = measure_time(
-                    requests.post, url=rq.url, headers=rq.headers, json=rq.json
+                    requests.post, url=rq.url, headers=rq.headers, json=rq.json # add timeout
                 )
                 qlog.info(
                     "HTTP POST completed with status_code={} in {:.3f}s",
